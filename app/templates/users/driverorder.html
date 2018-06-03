@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}gogo Car{% endblock %}
+{% block meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css" />
+    <style type="text/css">
+        #back{
+        background: url(/static/images/backimg9.jpg) no-repeat;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        width: 100%;
+        height: 100%;
+        position:fixed;
+        z-index:-1;
+        top: 50px;
+        left: 0;
+        }
+         #up1{
+             margin-left: 25%;
+             margin-top: 20px;
+             width:50%;
+        }
+        #up1 button{
+            background-color: transparent;
+            border-color: transparent;
+            margin-left: 200px;
+        }
+        #choice{
+            text-align: center;
+            display: none;
+        }
+        #choice button{
+            background-color: transparent;
+            border-color: transparent;
+        }
+
+    </style>
+{% endblock %}
+
+{% block  scripts %}
+{{ super() }}
+    <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.5&key=9b794981a705b29555e20dc5628e1dbf"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/core.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/cipher-core.js"></script>
+
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/tripledes.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/enc-base64.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/yahoo/yahoo-min.js"></script>
+    <script src="http://kjur.github.io/jsjws/base64x-1.1.min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/jsbn.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/jsbn2.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/prng4.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/rng.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/base64.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1hex-1.1.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/x509-1.1.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/pkcs5pkey-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1x509-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/crypto-1.1.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/ec.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/ec-patch.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ecdsa-modified-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/sm3.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/sm3-sm2-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/ecparam-1.0.js"></script>
+    <script type="text/javascript">
+    // 给出司机坐标
+    var map = new AMap.Map('container');
+        map.plugin('AMap.Geolocation', function () {
+            geolocation = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                maximumAge: 0,           //定位结果缓存0毫秒，默认：0
+                convert: true,           //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+                showButton: false,        //显示定位按钮，默认：true
+                showMarker: true,        //定位成功后在定位到的位置显示点标记，默认：true
+                panToLocation: true,     //定位成功后将定位到的位置作为地图中心点，默认：true
+                zoomToAccuracy:true      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition();
+        AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+        AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+    });
+    function onComplete(data) {
+        var positiondata = new Object();
+        positiondata.curLng = data.position.getLng();
+        positiondata.curLat = data.position.getLat();
+        $.ajax({
+            type: "POST",
+            url: "/driverorder",
+            data: JSON.stringify(positiondata),
+            contentType: "application/json; charset=UTF-8",
+            dataType: "json",
+            success: function () {
+
+            },
+            error: function (xhr, type) {
+            }
+        });
+        var lnglatXY = [positiondata.curLng, positiondata.curLat];
+        regeocoder(lnglatXY);
+    }
+    function onError(){
+    }
+    function regeocoder(lnglatXY) {  //逆地理编码
+        var geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all"
+        });
+        geocoder.getAddress(lnglatXY, function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+                geocoder_CallBack(result);
+            }
+        });
+    }
+    function geocoder_CallBack(data) {
+        //返回地址描述
+        document.getElementById("result").innerHTML = data.regeocode.formattedAddress;
+    }
+    //显示订单
+    function doVerify(pubkey,msg,order) {
+          var sig = new KJUR.crypto.Signature({"alg": "SM3withSM2", "prov": "cryptojs/jsrsa"});  //选取SM3与SM2混合的算法作为签名算法
+          sig.initVerifyByPublicKey({'ecpubhex': pubkey, 'eccurvename': "sm2"});  ///初始化签名
+          sig.updateString(JSON.stringify(order));  //对接收到的消息使用SM3算法进行Hash处理
+          var result = sig.verify(msg);  //验证签名
+          return result  //返回验证结果
+    }
+    var all_orders = [];
+    var socket = io.connect('http://127.0.0.1:5000');
+    socket.on('connect', function() {
+        alert("connected");
+        });
+    socket.on('disconnect', function () {
+         alert('disconnect');
+    });
+    socket.on('server_response',function(evt){
+        if(evt.code == 1){
+            var pubkey = evt.pubkey;
+            var msg = evt.msg;
+            var order = evt.order;
+            var result = doVerify(pubkey,msg,order);
+            if(result){
+                all_orders.push(order);
+                alert("您可以点击订单按钮，显示您的订单了");
+            }
+           else{
+                alert("您收到一条未通过验签的订单")
+            }
+        }
+    });
+    $("#up1 button").click(function(){
+        var rowCount = all_orders.length;
+        var table=$("#createtable");
+        for(var i=0; i < rowCount;i++) {
+            var tr = $("<tr></tr>");
+            tr.appendTo(table);
+            tr.attr("class", "tr_data");
+            tr.val(i.toString());
+            var td0 = $("<td>" + all_orders[i].id + "</td>");
+            td0.appendTo(tr);
+            var td1 = $("<td>" + all_orders[i].tel + "</td>");
+            td1.appendTo(tr);
+            var td2 = $("<td>" + all_orders[i].distance + "</td>");
+            td2.appendTo(tr);
+            var td3 = $("<td>" + all_orders[i].startp + "</td>");
+            td3.appendTo(tr);
+            var td4 = $("<td>" + all_orders[i].endp + "</td>");
+            td4.appendTo(tr);
+            var td5 = $("<td>" + all_orders[i].counts + "</td>");
+            td5.appendTo(tr);
+            var td6 = $("<td>" + all_orders[i].tip + "</td>");
+            td6.appendTo(tr);
+            tr.click(function () {
+                $("#choice").slideDown("fast");
+                $("#refuse").attr("value", $(this).val());
+                $("#accept").attr("value", $(this).val());
+            });
+        }
+        all_orders = [];
+        $("#refuse").click(function(){
+            $(".tr_data").get(parseInt($(this).val())).remove();
+            $("#choice").slideUp("fast");
+        });
+        $("#choice").click(function(){
+            $("#choice").slideUp("fast");
+        });
+        $("#accept").click(function(){
+            var index = parseInt($(this).val())+1;
+            var cur_td_id = $("#createtable").find("tr").eq(index).find("td").eq(0).text();
+            socket.emit('feedback',{'id':cur_td_id});
+            window.location.href="orderback?id="+cur_td_id;
+        });
+    });
+
+</script>
+ {{ moment.include_moment() }}
+ <div>
+ </div>
+{% endblock %}
+
+{% block page_content %}
+    <div id="back">
+    </div>
+    <div id="up1">
+        <img src="/static/images/location.png" height="50px" width="50px" style="display: inline">
+        <button><img src="/static/images/choice.png" height="50px" width="50px" style="display: inline"></button>
+{#        <button><img src="/static/images/trash-bin-symbol.png" height="50px" width="50px" style="display: inline"></button>#}
+        <p id="result"></p>
+    </div>
+    <table class="table table-bordered" id="createtable">
+    <tr>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">乘客ID</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">电话号码</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">距离</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">起始地</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">目的地</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">乘车人数</td>
+        <td style="background-color:#997d5b;filter:Alpha(opacity=50)" align="center">备注</td>
+    </tr>
+    </table>
+    <div id="choice">
+        <button id="accept" style="display: inline"><img src="/static/images/checked.png" height="50px" width="50px"></button>
+        <button id="refuse" style="display: inline; margin-left: 100px"><img src="/static/images/cancel.png" height="50px" width="50px"></button>
+    </div>
+
+
+{% endblock %}

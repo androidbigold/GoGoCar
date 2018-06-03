@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}gogoCar{% endblock %}
+{% block meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css" />
+    <style type="text/css">
+        #container{
+            height: 90%;
+            margin-top: 50px;
+        }
+        .info {
+            border: solid 1px silver;
+            width: 300px;
+        }
+        div.info-top {
+            position: relative;
+            background: none repeat scroll 0 0 #F9F9F9;
+            border-bottom: 1px solid #CCC;
+            border-radius: 5px 5px 0 0;
+        }
+        div.info-top div {
+            display: inline-block;
+            color: #333333;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 31px;
+            padding: 0 10px;
+        }
+        div.info-top img {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition-duration: 0.25s;
+        }
+        div.info-top img:hover {
+            box-shadow: 0px 0px 5px #000;
+        }
+        div.info-middle {
+            font-size: 12px;
+            padding: 6px;
+            line-height: 20px;
+        }
+        div.info-bottom {
+            height: 0px;
+            width: 100%;
+            clear: both;
+            text-align: center;
+        }
+        div.info-bottom img {
+            position: relative;
+            z-index: 104;
+        }
+        span {
+            margin-left: 5px;
+            font-size: 11px;
+        }
+        .info-middle img {
+            float: left;
+            margin-right: 6px;
+        }
+        </style>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.6&key=9b794981a705b29555e20dc5628e1dbf"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript">
+        var map = new AMap.Map('container', {
+            resizeEnable: true,
+            rotateEnable:true,
+            pitchEnable:true,
+            zoom: 17,
+            pitch:80,
+            rotation:-15,
+            viewMode:'3D',//开启3D视图,默认为关闭
+            buildingAnimation:true,//楼块出现是否带动画
+            expandZoomRange:true,
+            zooms:[3,20],
+            center: [116.35675,39.96333]
+        });
+
+        var driverLats = [];
+        driverLats = {{ getlats|tojson }};
+        var driverLngs = [];
+        driverLngs = {{ getlngs|tojson }};
+        var drivertels = [];
+        drivertels = {{ tels|tojson }};
+        var driverscords = [];
+        driverscords = {{ scords|tojson }};
+        var driverpics = [];
+        driverpics = {{ pics|tojson }};
+        var driverids = [];
+        driverids = {{ ids|tojson }};
+
+        map.plugin('AMap.Geolocation', function () {
+            geolocation = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                maximumAge: 0,           //定位结果缓存0毫秒，默认：0
+                convert: true,           //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+                showButton: true,        //显示定位按钮，默认：true
+                buttonPosition: 'LB',    //定位按钮停靠位置，默认：'LB'，左下角
+                buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                showMarker: false,        //定位成功后在定位到的位置显示点标记，默认：true
+                showCircle: false,        //定位成功后用圆圈表示定位精度范围，默认：true
+                panToLocation: true   //定位成功后将定位到的位置作为地图中心点，默认：true//定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+            });
+            map.addControl(geolocation);
+            geolocation.getCurrentPosition();
+            AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+            AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+        });
+        var x = document.getElementById("tip");
+        function onComplete(data) {
+            x.innerHTML="Latitude: " + data.position.getLng() +
+            "<br />Longitude: " + data.position.getLat();
+            var marker = new AMap.Marker({
+                map: map,
+                icon: 'https://vdata.amap.com/icons/b18/1/2.png',
+                position: data.position
+            });
+            createmarkers(data.position);
+            regeocoder(data.position);
+            map.setFitView();
+        }
+        function onError(){
+            x.innerHTML="定位失败";
+            }
+        function regeocoder(lnglatXY) {  //逆地理编码
+            var positiondata = new Object();
+            positiondata.curlat = lnglatXY.getLat();
+            positiondata.curlng = lnglatXY.getLng();
+            var geocoder = new AMap.Geocoder({
+                radius: 1000,
+                extensions: "all"
+            });
+            geocoder.getAddress(lnglatXY, function(status, result) {
+                if (status === 'complete' && result.info === 'OK') {
+
+                    positiondata.startp = result.regeocode.formattedAddress;
+                    $.ajax({
+                    type: "POST",
+                    url: "/passenger",
+                    data: JSON.stringify(positiondata),
+                    contentType: "application/json; charset=UTF-8",
+                    dataType: "json",
+                    success: function () {
+                    },
+                    error: function (xhr, type) {
+                    }
+                })
+
+                }
+            });
+        }
+        function geocoder_CallBack(data) {
+            var positiondata = {'startp':data.regeocode.formattedAddress};
+            $.ajax({
+            type: "POST",
+            url: "/passenger",
+            data: JSON.stringify(positiondata),
+            contentType: "application/json; charset=UTF-8",
+            dataType: "json",
+            success: function () {
+            },
+            error: function (xhr, type) {
+            }
+            })
+        }
+        function createmarkers(lnglat){
+            for(var i=0, len=driverLats.length;i < len;i++){
+                marker = new AMap.Marker({
+                    map: map,    //声明点标记所在的地图
+                    icon: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',    //设定点标记显示的图标
+                    position: [driverLngs[i], driverLats[i]],    //设定点标记的所在的位置
+                    offset: new AMap.Pixel(-12, -36)    //点标记显示位置偏移量
+                });
+                var lnglat1 = new AMap.LngLat(driverLngs[i],driverLats[i]);
+                var driver2passanger = Math.round(lnglat.distance(lnglat1));
+                marker.content= "<img src="+driverpics[i]+" width='100px' height='70px'/>Tel: "+drivertels[i]+"<br/>"+
+                "Scord: "+driverscords[i]+"<br/>"+"Distance:"+driver2passanger+"M"+"<br/>"+
+                "<a href='/order?id="+driverids[i]+"&distance="+driver2passanger+"'>pick</a>";
+                 marker.on('click', showInfor);
+                }
+        }
+        function showInfor(e) {
+            var title = 'driver message';
+            var infoWindow = new AMap.InfoWindow({    //生成一个新的信息窗体
+                isCustom: true,    //选择以自定义的方式生成信息窗体
+                content: createInfoWindow(title, e.target.content),  //设置信息窗体的内容
+                offset: new AMap.Pixel(16, -50)//-113, -140
+            });
+            infoWindow.open(map, e.target.getPosition());  //在地图上打开生成的信息窗体
+        }
+
+        //自定义窗口
+        function createInfoWindow(title, content) {
+            var info = document.createElement("div");
+            info.className = "info";
+
+            // 定义顶部标题
+            var top = document.createElement("div");
+            var titleD = document.createElement("div");
+            var closeX = document.createElement("img");
+            top.className = "info-top";
+            titleD.innerHTML = title;
+            closeX.src = "http://webapi.amap.com/images/close2.gif";
+            closeX.onclick = closeInfoWindow;
+            top.appendChild(titleD);
+            top.appendChild(closeX);
+            info.appendChild(top);
+
+            // 定义中部内容
+            var middle = document.createElement("div");
+            middle.className = "info-middle";
+            middle.style.backgroundColor = 'white';
+            middle.innerHTML = content;
+            info.appendChild(middle);
+
+            //定义底部
+            var bottom = document.createElement("div");
+            bottom.className = "info-bottom";
+            bottom.style.position = 'relative';
+            bottom.style.top = '0px';
+            bottom.style.margin = '0 auto';
+            var sharp = document.createElement("img");
+            sharp.src = "http://webapi.amap.com/images/sharp.png";
+            bottom.appendChild(sharp);
+            info.appendChild(bottom);
+            return info;
+        }
+        //关闭信息窗体
+        function closeInfoWindow() {
+            map.clearInfoWindow();
+        }
+
+
+    </script>
+{% endblock %}
+{% block content %}
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+    </div>
+    {% endfor %}
+    <div id="container"></div>
+    <div id="tip"></div>
+{% endblock %}

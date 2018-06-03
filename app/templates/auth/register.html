@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}GO GO CAR{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <!--suppress ALL -->
+    <style type="text/css">
+        #u2{
+        background: url(/static/images/backimg9.jpg) no-repeat;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        width: 100%;
+        height: 100%;
+        position:fixed;
+        z-index:-1;
+        top: 50px;
+        left: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block  scripts %}
+{{ super() }}
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        //修改提交按钮继承的类，按钮会变成蓝色
+        $("#submit").attr("class", "btn btn-info");
+        //修改提交按钮属性，上部外边界和宽度
+        $("#submit").css({
+            "width":"100%",
+            "margin-bottom":"10px"
+            });
+        $("div h1").css({"position":"fixed",
+                         "z-index":"999",
+                         "top":"0 auto"});
+        $("div h4").css({"margin":"0 auto",
+                        "margin-left":"365px",
+                        "width":"500px",
+                        "position":"absolute",
+                        "bottom":"0 auto" });
+        $(document).ready(function(){
+            var first_url = "{{ url_for('auth.generate_verify_code', _external=True) }}?imageid=" + Math.random()
+            $("label img").attr("src", first_url)
+            $("label img").click(function(){
+                var img_url = "{{ url_for('auth.generate_verify_code', _external=True) }}?imageid=" + Math.random()
+                $("this").attr("src", img_url)
+            })
+
+            })
+    </script>
+ {{ moment.include_moment() }}
+ <div>
+ </div>
+{% endblock %}
+
+{% block page_content %} <!--形成表单-->
+    <div class="page-header">
+        <h1>Hello, Stranger!</h1>
+        <h4>
+            The local date and time is {{ moment(current_time).format('LLL')}}.
+        </h4>
+    </div>
+    <div id="u2">
+    </div>
+    <div class="col-md-4 col-md-offset-4">
+        <form method="post">
+            {{ form.hidden_tag() }}
+        <div>
+            {{ wtf.form_field(form.name) }}
+            {{ wtf.form_field(form.password) }}
+            {{ wtf.form_field(form.password2) }}
+            {{ wtf.form_field(form.age) }}
+            {{ wtf.form_field(form.sex) }}
+            {{ wtf.form_field(form.phonenum) }}
+
+            <label class="control-label"><img src=""></label>
+            {{ wtf.form_field(form.verification_code) }}
+            {{ wtf.form_field(form.submit)}}
+        </div>
+        </form>
+        <div class="register">
+            <a type="button" class="btn btn-info" style="width:100%;" href="{{ url_for('auth.index') }}">已有账号？登录</a>
+        </div>
+    </div>
+{% endblock %}
+

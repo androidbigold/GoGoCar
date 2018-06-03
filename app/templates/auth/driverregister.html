@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}GO GO CAR{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <style type="text/css">
+        #u4{
+        background: url(/static/images/backimg9.jpg) no-repeat;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        width: 1725px;
+        height: 800px;
+        position:absolute;
+        z-index:-1;
+        top: 50px;
+        left: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block  scripts %}
+{{ super() }}
+    <script>
+        //修改提交按钮继承的类，按钮会变成蓝色
+        $("#submit").attr("class", "btn btn-info");
+        //修改提交按钮属性，上部外边界和宽度
+        $("#submit").css({
+            "width":"100%",
+            "margin-bottom":"10px"
+            });
+        $("div h1").css({
+                         "margin-left":"350px",
+                         "margin-top":"-50px",
+                         "position":"absolute",
+                         "top":"100px auto"});
+        $("#avatar").on('change', function () {
+            alert('11');
+
+            if (typeof (FileReader) != "undefined") {
+
+                {#var image_holder = $("#image-holder");#}
+                {#image_holder.empty();#}
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("form img").attr("src", e.target.result);
+                    {#$("", {#}
+                    {#    "src": e.target.result,#}
+                    {#    "class": "thumb-image"#}
+                  //  {#}).appendTo(image_holder);#}
+
+                };
+                {#image_holder.show();#}
+                reader.readAsDataURL($(this)[0].files[0]);
+            } else {
+                alert("你的浏览器不支持FileReader.");
+            }
+        });
+
+    </script>
+ {{ moment.include_moment() }}
+{% endblock %}
+
+{% block page_content %} <!--形成表单-->
+    <div class="page-header">
+        <h1>WELCOME TO GO GO CAR</h1>
+    </div>
+    <div id="u4">
+    </div>
+
+    <div class="col-md-4 col-md-offset-4">
+        <form method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_field(form.IDCARD) }}
+            {{ wtf.form_field(form.LICENSENUM) }}
+            {{ wtf.form_field(form.LICENSETYPE) }}
+            {{ wtf.form_field(form.CARNUM) }}
+            {{ wtf.form_field(form.CARTYPE) }}
+            {{ wtf.form_field(form.avatar) }}
+            <img src="" height="80px" width="100px">
+            {{ wtf.form_field(form.submit) }}
+        </form>
+    <div class="clear"></div>
+    <div class="driverregister">
+        <a type="button" class="btn btn-info" style="width:100%;" href="{{ url_for('auth.index') }}">司机资料已完善，重新登陆</a>
+    </div>
+    </div>
+{% endblock %}
+

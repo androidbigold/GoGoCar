@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Go Go Car{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <style>
+    #back{
+        background: url(/static/images/backimg9.jpg);
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        width: 100%;
+        height: 100%;
+        position:fixed;
+        z-index:-1;
+        top: 50px;
+        left: 0;
+        }
+    #up2{
+        color:#333333 ;
+        font-size: 20px;
+        margin-top: 30px;
+        width:400px;
+        margin-right: auto;
+        margin-left: auto;
+        text-align: left;
+    }
+    #up0{
+        color:#333333 ;
+        font-size: 20px;
+        margin-top: 30px;
+        width:400px;
+        margin-right: auto;
+        margin-left: auto;
+        text-align: left;
+
+    }
+    #up1{
+        border-bottom: 1px solid #CCCCCC;
+    }
+    .title{
+        font-size: 25px;
+        font-weight: bolder;
+        color:#333333 ;
+        margin-top: 20px;
+
+    }
+    .title img{
+        border:3px solid #333333;
+        padding:2px;
+    }
+    #send{
+        display: block;
+        margin-top: 50px;
+        margin-left: 400px;
+        width:60px;
+        height: 30px;
+        border: transparent;
+        background-color: transparent;
+        background-image:url(/static/images/check-box.png);
+        background-size: 60px 30px;
+        background-repeat: no-repeat;
+    }
+    </style>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/core.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/cipher-core.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/tripledes.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/googlecode/enc-base64.js"></script>
+    <script src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/yahoo/yahoo-min.js"></script>
+    <script src="http://kjur.github.io/jsjws/base64x-1.1.min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/jsbn.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/jsbn2.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/prng4.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/rng.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/base64.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1hex-1.1.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/x509-1.1.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/pkcs5pkey-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/asn1x509-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/crypto-1.1.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/ec.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ext/ec-patch.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/ecdsa-modified-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/sm3.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/sm3-sm2-1.0.js"></script>
+    <script language="JavaScript" type="text/javascript" src="http://www.jonllen.com/upload/jonllen/case/jsrsasign-master/components/sm2/ecparam-1.0.js"></script>
+    <script>
+        document.getElementById('driverid').value = {{ driverid|tojson }};
+        document.getElementById('drivertel').value = {{ drivertel|tojson  }};
+        document.getElementById('carnumber').value = {{ carnum|tojson  }};
+        document.getElementById('cartype').value = {{ cartype|tojson  }};
+        document.getElementById('distance').value = {{ distance|tojson  }};
+        document.getElementById('startp').value = {{ startp|tojson  }};
+        function doGenerate() {
+            var ec = new KJUR.crypto.ECDSA({"curve": "sm2"});
+            var keypair = ec.generateKeyPairHex();
+            var prvkey1 = keypair.ecprvhex;
+            var pubkey1 = keypair.ecpubhex;
+            return [prvkey1, pubkey1]
+        }
+        function doSign(prvkey,msg) {
+            var sig = new KJUR.crypto.Signature({"alg":"SM3withSM2", "prov": "cryptojs/jsrsa"});  //选取SM3与SM2混合的算法作为签名算法
+            sig.initSign({'ecprvhex': prvkey, 'eccurvename': "sm2"});  //初始化签名算法
+            sig.updateString(msg);  //对待签名的信息使用SM3算法进行Hash处理
+            var sigValueHex = sig.sign();  //进行签名
+            var signmsg = sigValueHex;
+            return signmsg  //返回签名
+        }
+        $("#send").click(function(){
+            var keys = doGenerate();
+            var pravite_key = keys[0];
+            var public_key = keys[1];
+            alert({{ current_user.id }});
+            var order = {"id":{{ current_user.id }},"distance":$("#distance").val(),"startp":$("#startp").val(),"endp":$("#endp").val(),"tel":$("#tel").val(),"counts":$("#counts").val(),"tip":$("#addtip").val(),"driverid":$("#driverid").val()};
+            var order_msg = JSON.stringify(order);
+            var msg = doSign(pravite_key,order_msg);
+            alert(msg);
+            var send_order = {"pubkey":public_key,"msg":msg,"order":order};
+            $.ajax({
+                    type: "POST",
+                    url: "/order?id="+$("#driverid").val()+"&distance="+$("#distance").val(),
+                    data: JSON.stringify(send_order),
+                    contentType: "application/json; charset=UTF-8",
+                    dataType: "json"
+            });
+            window.location.href = "orderfinish?id="+$("#driverid").val();
+        })
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="back"></div>
+    <div id="msg"></div>
+    <div class="page-header">
+         <h1>Hello, {{ name }}!</h1>
+         <h2>Please fill your order</h2>
+    </div>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <p class="title">Your Driver <img src="{{ driverpic }}" height="80px" width="100px" ></p>
+        <div id="up1">
+            <div id="up0">
+                {{ wtf.form_field(form.driverid) }}
+                {{ wtf.form_field(form.drivertel) }}
+                {{ wtf.form_field(form.carnumber) }}
+                {{ wtf.form_field(form.cartype) }}
+                {{ wtf.form_field(form.distance) }}
+             </div>
+        </div>
+        <p class="title">Yourself</p>
+        <div id="up2">
+                {{ wtf.form_field(form.startp) }}
+                {{ wtf.form_field(form.endp) }}
+                {{ wtf.form_field(form.tel) }}
+                {{ wtf.form_field(form.counts) }}
+                {{ wtf.form_field(form.addtip) }}
+        </div>
+    </form>
+    <button id="send"></button>
+{% endblock %}

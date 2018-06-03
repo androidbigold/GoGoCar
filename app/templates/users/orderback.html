@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}GO GO CAR{% endblock %}
+{% block meta %}
+    <!--suppress ALL -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+    <style type="text/css">
+        #panel {
+            position: fixed;
+            background-color: white;
+            max-height: 90%;
+            overflow-y: auto;
+            top: 10px;
+            right: 10px;
+            width: 280px;
+        }
+         #container{
+            height: 90%;
+            margin-top: 50px;
+         }
+        #txt{
+            position:fixed;
+            top:50px;
+            font-size: 40px;
+            font-family: 'Ubuntu', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+            color:#333333;
+        }
+    </style>
+{% endblock %}
+
+{% block  scripts %}
+{{ super() }}
+    <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.5&key=9b794981a705b29555e20dc5628e1dbf"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.6&key=9b794981a705b29555e20dc5628e1dbf&plugin=AMap.Driving"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript">
+    //基本地图加载
+     var map = new AMap.Map("container", {
+        resizeEnable: true,
+        zoom: 13 //地图显示的缩放级别
+     });
+     var driving = new AMap.Driving({
+        map: map,
+        panel: "panel"
+     });
+     // 根据起终点经纬度规划驾车导航路线
+     driving.search(new AMap.LngLat({{ d_lng }}, {{ d_lat }}), new AMap.LngLat({{ p_lng }}, {{ p_lat }}));
+     var terval_id = setInterval(function(){
+         map.plugin('AMap.Geolocation', function () {
+            geolocation = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                maximumAge: 0,           //定位结果缓存0毫秒，默认：0
+                convert: true,           //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+                showButton: false,        //显示定位按钮，默认：true
+                showMarker: false,        //定位成功后在定位到的位置显示点标记，默认：true
+                showCircle: false,        //定位成功后用圆圈表示定位精度范围，默认：true
+                panToLocation: true,     //定位成功后将定位到的位置作为地图中心点，默认：true
+                zoomToAccuracy: true      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+            });
+            map.addControl(geolocation);
+            geolocation.getCurrentPosition();
+            AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+            AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+        });
+     },10000);
+     function onComplete(data){
+        var positiondata = new Object();
+        positiondata.curLng = data.position.getLng();
+        positiondata.curLat = data.position.getLat();
+        $.ajax({
+            type: "POST",
+            url: "/driverorder",
+            data: JSON.stringify(positiondata),
+            contentType: "application/json; charset=UTF-8",
+            dataType: "json",
+            success: function () {
+
+            },
+            error: function (xhr, type) {
+            }
+        });
+         //构造路线导航类
+        var driving = new AMap.Driving({
+            map: map
+        });
+        // 根据起终点经纬度规划驾车导航路线
+        var destination = new AMap.LngLat({{ p_lng }}, {{ p_lat }});
+        driving.search(data.position, destination);
+        var distancesub = Math.round(data.position.distance(destination))
+        if(distancesub <=10 && distancesub >=0 ){
+            clearInterval(terval_id);
+            $("#txt").text("Waiting for you passenger to get on!");
+            window.location.href="navigation";
+
+        }
+     }
+     function onError() {
+         alert('wrong');
+
+     }
+    </script>
+
+{% endblock %}
+
+{% block content %}
+    <div id="container"></div>
+    <div id="panel"></div>
+    <div id="txt">Drive To Your Passenger</div>
+
+{% endblock %}
+

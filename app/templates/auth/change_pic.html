@@ -1,0 +1,35 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}GO GO CAR{% endblock %}
+
+{% block head %}   <!--用来显示图标-->
+    {{ super() }}
+    <link rel="shortcut icon" href="{{ url_for('static', filename = 'favicon.ico') }}"     type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename = 'favicon.ico') }}"     type="image/x-icon">
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $("#avatar").on('change', function () {
+            if (typeof (FileReader) != "undefined") {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("form img").attr("src", e.target.result);
+                };
+                reader.readAsDataURL($(this)[0].files[0]);
+            } else {
+                alert("你的浏览器不支持FileReader.");
+            }
+        });
+   </script>
+{% endblock %}
+
+{% block content %}
+     <form method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.avatar) }}
+         <img src="" width="300px" height="300px">
+        {{ wtf.form_field(form.submit) }}
+   </form>
+{% endblock %}

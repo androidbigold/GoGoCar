@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}gogoCar{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <style>
+        #back{
+            background: url(/static/images/backimg.jpg);
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            width: 100%;
+            height: 100%;
+            position:fixed;
+            z-index:-1;
+            top: 50px;
+            left: 0;
+        }
+        #tishiyu{
+            text-align: center;
+            width:50%;
+            height:50%;
+            position:fixed;
+            top:40%;
+            left:23%;
+            background-color: transparent;
+            font-size: 60px;
+            color: antiquewhite;
+        }
+    </style>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.6&key=9b794981a705b29555e20dc5628e1dbf"></script>
+    <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript">
+        var state = false;
+        var socket = io.connect('http://127.0.0.1:5000');
+        socket.on('acceptorder', function() {
+            state = true;
+            var lnglat1 = new AMap.LngLat({{ p_lng }},{{ p_lat }});
+            var lnglat2 = new AMap.LngLat({{ d_lng }},{{ d_lat }});
+            var driver2passanger = Math.round(lnglat1.distance(lnglat2));
+            if(driver2passanger<=10 && driver2passanger >= 0){
+                window.location.href="navigation";
+            }
+            else{
+                $("#tishiyu").html("<span id='wenben'>The distance is:</span>" +
+                "<span id='juli'></span>");
+                $("#juli").text(driver2passanger+'M');
+            }
+
+        });
+        {#var t=setTimeout(function(){#}
+        {#    if(state==false){#}
+        {#        alert("Please choose another driver");#}
+        {#         window.location.href="passenger";}#}
+     //   {#},20000);#}
+
+
+    </script>
+{% endblock %}
+{% block content %}
+    <div id="back">
+    </div>
+    <div id="tishiyu">
+        <img src="/static/images/loading1.gif" height="100px" width="100px">
+    </div>
+
+
+
+{% endblock %}

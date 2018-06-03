@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}GO GO CAR{% endblock %}
+{% block meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+{% endblock %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+    <style type="text/css">
+        #panel {
+            position: fixed;
+            background-color: white;
+            max-height: 90%;
+            overflow-y: auto;
+            top: 10px;
+            right: 10px;
+            width: 280px;
+        }
+         #container{
+            height: 90%;
+            margin-top: 50px;
+         }
+        #paymoney{
+            position:fixed;
+            top:100px;
+            left: 50px;
+            background: transparent;
+            border-color: transparent;
+        }
+    </style>
+
+{% endblock %}
+
+{% block  scripts %}
+{{ super() }}
+    <script src="http://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.5&key=9b794981a705b29555e20dc5628e1dbf"></script>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.6&key=9b794981a705b29555e20dc5628e1dbf&plugin=AMap.Driving"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript">
+    //基本地图加载
+     var map = new AMap.Map("container", {
+        resizeEnable: true,
+        zoom: 13 //地图显示的缩放级别
+     });
+     var driving = new AMap.Driving({
+        map: map,
+        extensions: "all",
+        panel: "panel"
+     });
+    // 根据起终点经纬度规划驾车导航路线
+    driving.search([{keyword:{{ startp|tojson  }}},{keyword:{{ endp|tojson  }}}], function(status, result){
+        if(status == 'complete'){
+            $("#paymoney").click(function(){
+                alert('您的乘车费用为:'+result.taxi_cost);
+                window.location.href = "http://localhost:8080?start=a&destination=b&amount=13";
+                {#var cost = new Object();#}
+                {#cost.fee = result.taxi_cost;#}
+                {#$.ajax({#}
+                {#    type: "POST",#}
+                {#    url: "/navigation",#}
+                {#    data: JSON.stringify(cost),#}
+                {#    contentType: "application/json; charset=UTF-8",#}
+                {#    dataType: "json",#}
+                {#    success: function () {#}
+                {#        alert("success")#}
+                {#    },#}
+                {#    error: function (xhr, type) {#}
+                {#    }#}
+              //  {#});#}
+            });
+        }
+            });
+    </script>
+
+{% endblock %}
+
+{% block content %}
+    <div id="container"></div>
+    <div id="panel"></div>
+    <button id="paymoney"><img src="/static/images/money.png" height="50px" width="40px"></button>
+
+{% endblock %}
